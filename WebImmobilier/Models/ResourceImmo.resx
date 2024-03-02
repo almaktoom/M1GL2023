@@ -123,6 +123,9 @@
   <data name="EmailFormatError" xml:space="preserve">
     <value>Veuillez entrer une adresse email valide.</value>
   </data>
+  <data name="EmailRequiredError" xml:space="preserve">
+    <value>l'Email est requis</value>
+  </data>
   <data name="Imprimer" xml:space="preserve">
     <value>Imprimer</value>
   </data>

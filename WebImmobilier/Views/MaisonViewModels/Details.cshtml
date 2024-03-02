@@ -30,6 +30,15 @@
                     @Html.ActionLink(ResourceImmo.Modifier, "Edit", new { id = Model.IdBien }, new { @class = "btn btn-primary" })
 
                     @Html.ActionLink(ResourceImmo.Index, "Index", null, new { @class = "btn btn-outline-danger" })
+
+                    <div class="form-group m-2">
+                        @using (Html.BeginForm("ImprimerD", "MaisonViewModels", FormMethod.Post, new { target = "_blank" }))
+                        {
+                            @Html.Hidden("id", Model.IdBien)
+                            <button type="submit" class="btn btn-success">Imprimer le rapport</button>
+                        }
+                    </div>
+
                 </div>
             </div>
         </div>

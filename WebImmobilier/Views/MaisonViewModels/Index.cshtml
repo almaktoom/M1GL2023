@@ -19,13 +19,14 @@
             </div>
         </div>
         <button type="submit" class="btn btn-primary">@ResourceImmo.Rechercher</button>
-        <a href="@Url.Action("Imprimer")" target="_blank" class="btn btn-secondary">@ResourceImmo.Imprimer</a>
     </div>
 
 }
 <h2>@ResourceBien.TitreListMaison</h2>
 <p>
     @Html.ActionLink(ResourceImmo.Nouveau + " Maison", "Create", null, new { @class = "btn btn-primary" })
+    <a href="@Url.Action("Imprimer")" target="_blank" class="btn btn-secondary">@ResourceImmo.Imprimer</a>
+
 </p>
 
 <div class="maison-list">

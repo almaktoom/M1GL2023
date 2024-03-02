@@ -79,6 +79,15 @@ namespace WebImmobilier.Models {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à l&apos;Email est requis.
+        /// </summary>
+        public static string EmailRequiredError {
+            get {
+                return ResourceManager.GetString("EmailRequiredError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Imprimer.
         /// </summary>
         public static string Imprimer {

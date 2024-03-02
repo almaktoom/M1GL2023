@@ -154,9 +154,12 @@ namespace WebImmobilier.Controllers
                 table.Rows.Add(rowData);
             }
 
+
+
             return table;
         }
 
+        
 
 
 
@@ -172,29 +175,61 @@ namespace WebImmobilier.Controllers
             }
         }
 
-        public ActionResult Imprimer(int id)
+        public DataTable GetMaisonData(int id)
         {
-            // Récupérer les détails de la maison en fonction de l'ID
-            MaisonViewModel maison = GetMaisonViewModelsById(id);
+            DataTable table = new DataTable();
+            table.Columns.Add("DescriptionBien", typeof(string));
+            table.Columns.Add("SuperficieBien", typeof(float));
+            table.Columns.Add("Localite", typeof(string));
+            table.Columns.Add("NbreSalleEau", typeof(int));
+            table.Columns.Add("NbreToilette", typeof(int));
+            table.Columns.Add("Proprietaire", typeof(string));
+            table.Columns.Add("NbreChambre", typeof(int));
 
-            if (maison == null)
+            var maisonViewModel = GetMaisonViewModelsById(id);
+
+            if (maisonViewModel != null)
             {
-                return HttpNotFound();
+                object[] rowData = new object[7]; // Créer un nouveau tableau pour une seule ligne
+
+                rowData[0] = maisonViewModel.DescriptionBien;
+                rowData[1] = maisonViewModel.SuperficieBien;
+                rowData[2] = maisonViewModel.Localite;
+                rowData[3] = maisonViewModel.NbreSalleEau;
+                rowData[4] = maisonViewModel.NbreToilette;
+                rowData[6] = maisonViewModel.NbreChambre;
+
+                // Récupérer les informations du propriétaire en fonction de l'ID du propriétaire
+                var proprio = db.proprietaires.FirstOrDefault(p => p.IdUser == maisonViewModel.IdProprio);
+                if (proprio != null)
+                {
+                    rowData[5] = $"{proprio.NomUser} {proprio.PrenomUser}";
+                }
+                else
+                {
+                    rowData[5] = "Inconnu";
+                }
+
+                table.Rows.Add(rowData);
             }
 
-            // Générer le rapport Crystal Report
-            ReportDocument reportDocument = new ReportDocument();
-            reportDocument.Load(Server.MapPath("~/Reports/DetailsMaisonReport.rpt")); // Chemin vers votre rapport Crystal Report
-
-            // Passer les données de la maison au rapport
-            reportDocument.SetDataSource(maison);
-
-            // Exporter le rapport au format PDF
-            Stream stream = reportDocument.ExportToStream(ExportFormatType.PortableDocFormat);
-
-            // Retourner le rapport PDF en tant que fichier à télécharger
-            return File(stream, "application/pdf", "MaisonDetails.pdf");
+            return table;
         }
+
+
+        public ActionResult ImprimerD(int id)
+        {
+            using (CrystalDecisions.CrystalReports.Engine.ReportDocument rpt = new CrystalDecisions.CrystalReports.Engine.ReportDocument())
+            {
+                rpt.Load(Server.MapPath("~/Report/DetailsMAisonReport.rpt"));
+                rpt.SetDataSource(GetMaisonData(id)); // Utilisez la méthode pour récupérer les données d'une seule maison
+                Stream stream = rpt.ExportToStream(CrystalDecisions.Shared.ExportFormatType.PortableDocFormat);
+                Response.AppendHeader("Content-Disposition", "inline");
+                return File(stream, "application/pdf");
+            }
+        }
+
+
 
 
 

@@ -35,9 +35,9 @@ namespace WebImmobilier.Models
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessageResourceName = "PasswordFormatError", ErrorMessageResourceType = typeof(ResourceImmo))]
         public string Password { get; set; }
 
-        [Required(ErrorMessageResourceName = "EmailRequiredError", ErrorMessageResourceType = typeof(ResourceImmo))]
-        [EmailAddress(ErrorMessageResourceName = "EmailFormatError", ErrorMessageResourceType = typeof(ResourceImmo))]
-        public string Email { get; set; }
+        //[Required(ErrorMessageResourceName = "EmailRequiredError", ErrorMessageResourceType = typeof(ResourceImmo))]
+        //[EmailAddress(ErrorMessageResourceName = "EmailFormatError", ErrorMessageResourceType = typeof(ResourceImmo))]
+        //public string Email { get; set; }
     }
 }
 
