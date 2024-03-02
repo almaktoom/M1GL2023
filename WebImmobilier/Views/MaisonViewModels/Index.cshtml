@@ -1,14 +1,31 @@
-﻿@model IEnumerable<WebImmobilier.Models.MaisonViewModel>
-
+﻿@model PagedList.IPagedList<WebImmobilier.Models.MaisonViewModel>
+@using WebImmobilier.Models
 @{
     ViewBag.Title = "Liste des Maisons";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Liste des Maisons</h2>
 
+@using (Html.BeginForm("Index", "MaisonViewModels", FormMethod.Get))
+{
+    <div class="shadow-sm  p-3 mb-2">
+        <h2>@ResourceImmo.Recherche</h2>
+        <div class="row ">
+            <div class="form-group col-md-6">
+                @Html.TextBox("localite", ViewBag.Localite as string, new { @class = "form-control", placeholder = ResourceBien.Localite })
+            </div>
+            <div class="form-group col-md-6">
+                @Html.TextBox("nbChambres", ViewBag.NbChambres as string, new { @class = "form-control", placeholder = ResourceBien.NbrChambre })
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">@ResourceImmo.Rechercher</button>
+        <a href="@Url.Action("Imprimer")" target="_blank" class="btn btn-secondary">@ResourceImmo.Imprimer</a>
+    </div>
+
+}
+<h2>@ResourceBien.TitreListMaison</h2>
 <p>
-    @Html.ActionLink("Nouvelle Maison", "Create", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink(ResourceImmo.Nouveau + " Maison", "Create", null, new { @class = "btn btn-primary" })
 </p>
 
 <div class="maison-list">
@@ -22,17 +39,17 @@
                         <h5 class="card-title">@Html.DisplayFor(modelItem => item.Proprietaire.NomUser)</h5>
                         <p class="card-text">@Html.DisplayFor(modelItem => item.DescriptionBien)</p>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><i class="fas fa-expand"></i> @Html.DisplayFor(modelItem => item.SuperficieBien) m²</li>
+                            <li class="list-group-item"><i class="fas fa-expand"></i> @Html.DisplayFor(modelItem => item.SuperficieBien) @ResourceBien.Mcarré</li>
                             <li class="list-group-item"><i class="fas fa-map-marker-alt"></i> @Html.DisplayFor(modelItem => item.Localite)</li>
-                            <li class="list-group-item"><i class="fas fa-bed"></i> @Html.DisplayFor(modelItem => item.NbreChambre) chambre(s)</li>
-                            <li class="list-group-item"><i class="fas fa-bath"></i> @Html.DisplayFor(modelItem => item.NbreSalleEau) salle d'eau (s)</li>
-                            <li class="list-group-item"><i class="fas fa-utensils"></i> @Html.DisplayFor(modelItem => item.NbreCuisine) cuisine (s)</li>
-                            <li class="list-group-item"><i class="fas fa-toilet"></i> @Html.DisplayFor(modelItem => item.NbreToilette) toilette(s)</li>
+                            <li class="list-group-item"><i class="fas fa-bed"></i> @Html.DisplayFor(modelItem => item.NbreChambre) @ResourceBien.NbrChambre</li>
+                            <li class="list-group-item"><i class="fas fa-bath"></i> @Html.DisplayFor(modelItem => item.NbreSalleEau) @ResourceBien.NbrSalleBain</li>
+                            <li class="list-group-item"><i class="fas fa-utensils"></i> @Html.DisplayFor(modelItem => item.NbreCuisine) @ResourceBien.NbrCuisine</li>
+                            <li class="list-group-item"><i class="fas fa-toilet"></i> @Html.DisplayFor(modelItem => item.NbreToilette) @ResourceBien.NbrToilette</li>
                         </ul>
-                        <div class="btn-group" role="group">
-                            @Html.ActionLink("Modifier", "Edit", new { id = item.IdBien }, new { @class = "btn btn-primary" })
-                            @Html.ActionLink("Détails", "Details", new { id = item.IdBien }, new { @class = "btn btn-info" })
-                            @Html.ActionLink("Supprimer", "Delete", new { id = item.IdBien }, new { @class = "btn btn-danger" })
+                        <div class="btn-group m-4" role="group">
+                            @Html.ActionLink(ResourceImmo.Modifier, "Edit", new { id = item.IdBien }, new { @class = "btn btn-primary" })
+                            @Html.ActionLink(ResourceImmo.VoirDétails, "Details", new { id = item.IdBien }, new { @class = "btn btn-info" })
+                            @Html.ActionLink(ResourceImmo.Supprimer, "Delete", new { id = item.IdBien }, new { @class = "btn btn-danger" })
                         </div>
                     </div>
                 </div>
@@ -40,3 +57,30 @@
         }
     </div>
 </div>
+@{
+    int pageCount = Model.PageCount;
+    int currentPage = Model.PageNumber;
+    string actionUrl = Url.Action("Index", new { page = "" });
+}
+<nav>
+    <ul class="pagination pagination-circle">
+        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = 1 })">Prem</a>
+        </li>
+        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Préc</a>
+        </li>
+        @for (int i = 1; i <= pageCount; i++)
+        {
+            <li class="page-item @(i == currentPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+            </li>
+        }
+        <li class="page-item @(currentPage == pageCount ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">Suiv</a>
+        </li>
+        <li class="page-item @(currentPage == pageCount ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = pageCount })">Der</a>
+        </li>
+    </ul>
+</nav>

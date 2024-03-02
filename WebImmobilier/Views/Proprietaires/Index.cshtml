@@ -1,15 +1,33 @@
 ﻿@model PagedList.IPagedList<WebImmobilier.Models.Proprietaire>
 @using PagedList.Mvc
+@using WebImmobilier.Models
 
 @{
     ViewBag.Title = "Liste des propriètaire";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@using (Html.BeginForm("Index", "Proprietaires", FormMethod.Get))
+{<div class="shadow-sm  p-3 mb-2">
+        <h2>@ResourceImmo.Recherche</h2>
+        <div class="row ">
+            <div class="form-group col-md-4">
+                @Html.TextBox("nom", ViewBag.Nom as string, new { @class = "form-control", placeholder = "Nom..." })
+            </div>
+            <div class="form-group col-md-4">
+                @Html.TextBox("prenom", ViewBag.Prenom as string, new { @class = "form-control", placeholder = "Prénom..." })
+            </div>
+            <div class="form-group col-md-4">
+                @Html.TextBox("login", ViewBag.Login as string, new { @class = "form-control", placeholder = "Login..." })
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">@ResourceImmo.Rechercher</button>
+    </div>
+}
 
-<h2>Les Proprietaires</h2>
+<h2>@ResourceImmo.TitreListProprio</h2>
 
 <p>
-    @Html.ActionLink("Nouveau Propriétaire", "Create",null, new { @class = "btn btn-primary" })
+    @Html.ActionLink(ResourceImmo.Nouveau, "Create", null, new { @class = "btn btn-primary" })
 </p>
 <table class="table table-striped">
     <tr class="thead-dark">
@@ -49,13 +67,47 @@
 
             <td>
                 <div class="btn-group" role="group">
-                    @Html.ActionLink("Modifier", "Edit", new { id = item.IdUser }, new { @class = "btn btn-primary" })
-                    @Html.ActionLink("Détails", "Details", new { id = item.IdUser }, new { @class = "btn btn-info" })
-                    @Html.ActionLink("Supprimer", "Delete", new { id = item.IdUser }, new { @class = "btn btn-danger" })
+                    @Html.ActionLink(ResourceImmo.Modifier, "Edit", new { id = item.IdUser }, new { @class = "btn btn-primary" })
+                    @Html.ActionLink(ResourceImmo.VoirDétails, "Details", new { id = item.IdUser }, new { @class = "btn btn-info" })
+                    @Html.ActionLink(ResourceImmo.Supprimer, "Delete", new { id = item.IdUser }, new { @class = "btn btn-danger" })
                 </div>
             </td>
         </tr>
     }
 </table>
-    @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), PagedListRenderOptions.ClassicPlusFirstAndLast)
- 
+
+@{
+    int pageCount = Model.PageCount;
+    int currentPage = Model.PageNumber;
+    string actionUrl = Url.Action("Index", new { page = "" });
+}
+
+<nav>
+    <ul class="pagination pagination-circle">
+        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = 1 })">Prem</a>
+        </li>
+        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Préc</a>
+        </li>
+        @for (int i = 1; i <= pageCount; i++)
+        {
+            <li class="page-item @(i == currentPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+            </li>
+        }
+        <li class="page-item @(currentPage == pageCount ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">Suiv</a>
+        </li>
+        <li class="page-item @(currentPage == pageCount ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { page = pageCount })">Der</a>
+        </li>
+    </ul>
+</nav>
+
+@*@Html.PagedListPager(Model, page => Url.Action("Index", new { page }), PagedListRenderOptions.ClassicPlusFirstAndLast, new
+    {
+        ulClassName = "pagination",
+        liClassName = "page-item",
+        aClassName = "page-link"
+    })*@

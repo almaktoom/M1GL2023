@@ -1,11 +1,16 @@
-﻿using System;
+﻿using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
+using PagedList;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.UI;
 using WebImmobilier.Models;
 
 namespace WebImmobilier.Controllers
@@ -39,6 +44,8 @@ namespace WebImmobilier.Controllers
             return liste;
         }
 
+       
+
         MaisonViewModel GetMaisonViewModelsById(int id)
         {
             MaisonViewModel maison = new MaisonViewModel();
@@ -65,12 +72,155 @@ namespace WebImmobilier.Controllers
             return maison;
         }
 
-        // GET: MaisonViewModels
-        public ActionResult Index()
+        //public DataTable GetTableMAison()
+        //{
+        //    DataTable table = new DataTable();
+        //    table.Columns.Add("DescriptionBien", typeof(string));
+        //    table.Columns.Add("SuperficiBien", typeof(float));
+        //    table.Columns.Add("Localite", typeof(string));
+        //    table.Columns.Add("NbreSalleEau", typeof(int));
+        //    table.Columns.Add("NbreToilette", typeof(int));
+        //    table.Columns.Add("Prorietaire", typeof(string));
+        //    table.Columns.Add("NbreChambre", typeof(int));
+
+        //    var maisonViewModels = GetMaisonViewModels();
+        //    foreach (var e in maisonViewModels)
+        //    {
+        //        table.Rows.Add(e.DescriptionBien,
+        //                       e.SuperficieBien,
+        //                       e.Localite,
+        //                       e.NbreSalleEau,
+        //                       e.NbreCuisine,
+        //                       e.NbreToilette,
+        //                       e.Proprietaire,
+        //                       e.NbreChambre);
+        //    }
+        //        return table;
+        //}
+
+        //public ActionResult Imprimer()
+        //{
+        //    CrystalDecisions.CrystalReports.Engine.ReportDocument rpt = new CrystalDecisions.CrystalReports.Engine.ReportDocument();
+        //    try
+        //    {
+        //        rpt.Load(Server.MapPath("~/Report/rptListMAison.rpt"));
+        //        rpt.SetDataSource(GetTableMAison());
+        //        Stream stream = rpt.ExportToStream(CrystalDecisions.Shared.ExportFormatType.PortableDocFormat);
+        //        Response.AppendHeader("Content-Disposition", "inline");
+        //        return File(stream, "application/pdf");
+        //    }finally
+        //    { 
+        //        rpt.Dispose();
+        //        rpt.Close();
+        //    }
+
+        //}
+
+        public DataTable GetTableMAison()
         {
+            DataTable table = new DataTable();
+            table.Columns.Add("DescriptionBien", typeof(string));
+            table.Columns.Add("SuperficieBien", typeof(float));
+            table.Columns.Add("Localite", typeof(string));
+            table.Columns.Add("NbreSalleEau", typeof(int));
+            table.Columns.Add("NbreToilette", typeof(int));
+            table.Columns.Add("Proprietaire", typeof(string));
+            table.Columns.Add("NbreChambre", typeof(int));
+
             var maisonViewModels = GetMaisonViewModels();
-            return View(maisonViewModels.ToList());
+
+            foreach (var e in maisonViewModels)
+            {
+                object[] rowData = new object[7]; // Créer un nouveau tableau pour chaque ligne
+
+                rowData[0] = e.DescriptionBien;
+                rowData[1] = e.SuperficieBien;
+                rowData[2] = e.Localite;
+                rowData[3] = e.NbreSalleEau;
+                rowData[4] = e.NbreToilette;
+                rowData[6] = e.NbreChambre;
+
+                // Récupérer les informations du propriétaire en fonction de l'ID du propriétaire
+                var proprio = db.proprietaires.FirstOrDefault(p => p.IdUser == e.IdProprio);
+                if (proprio != null)
+                {
+                    rowData[5] = $"{proprio.NomUser} {proprio.PrenomUser}";
+                }
+                else
+                {
+                    rowData[5] = "Inconnu";
+                }
+
+                table.Rows.Add(rowData);
+            }
+
+            return table;
         }
+
+
+
+
+        public ActionResult Imprimer()
+        {
+            using (CrystalDecisions.CrystalReports.Engine.ReportDocument rpt = new CrystalDecisions.CrystalReports.Engine.ReportDocument())
+            {
+                rpt.Load(Server.MapPath("~/Report/rptListMAison.rpt"));
+                rpt.SetDataSource(GetTableMAison());
+                Stream stream = rpt.ExportToStream(CrystalDecisions.Shared.ExportFormatType.PortableDocFormat);
+                Response.AppendHeader("Content-Disposition", "inline");
+                return File(stream, "application/pdf");
+            }
+        }
+
+        public ActionResult Imprimer(int id)
+        {
+            // Récupérer les détails de la maison en fonction de l'ID
+            MaisonViewModel maison = GetMaisonViewModelsById(id);
+
+            if (maison == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Générer le rapport Crystal Report
+            ReportDocument reportDocument = new ReportDocument();
+            reportDocument.Load(Server.MapPath("~/Reports/DetailsMaisonReport.rpt")); // Chemin vers votre rapport Crystal Report
+
+            // Passer les données de la maison au rapport
+            reportDocument.SetDataSource(maison);
+
+            // Exporter le rapport au format PDF
+            Stream stream = reportDocument.ExportToStream(ExportFormatType.PortableDocFormat);
+
+            // Retourner le rapport PDF en tant que fichier à télécharger
+            return File(stream, "application/pdf", "MaisonDetails.pdf");
+        }
+
+
+
+
+        // GET: MaisonViewModels
+        public ActionResult Index(string localite, int? nbChambres, int? page)
+        {
+            int pageNumber = (page ?? 1);
+            int pageSize = 3;
+
+            var maisonViewModels = GetMaisonViewModels();
+
+            // Filtrer les maisons en fonction des critères de recherche
+            if (!string.IsNullOrEmpty(localite))
+            {
+                maisonViewModels = maisonViewModels.Where(m => m.Localite.Contains(localite)).ToList();
+            }
+
+            if (nbChambres.HasValue)
+            {
+                maisonViewModels = maisonViewModels.Where(m => m.NbreChambre == nbChambres).ToList();
+            }
+
+            return View(maisonViewModels.ToPagedList(pageNumber, pageSize));
+        }
+
 
         // GET: MaisonViewModels/Details/5
         public ActionResult Details(int? id)
